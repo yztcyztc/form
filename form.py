@@ -15,10 +15,10 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'YZTC'
 log = logging.getLogger(__name__)
-mysql_host = os.environ.get("mysql_host",'20.12.17.153:3306')
-mysql_db = os.environ.get("mysql_db",'devops_db')
-mysql_user = os.environ.get("mysql_user",'root')
-mysql_password = os.environ.get("mysql_password",'Ufsoft*123')
+mysql_host = os.environ.get("mysql_host",'10.3.15.207:3306')
+mysql_db = os.environ.get("mysql_db",'yonyou_cloud_test')
+mysql_user = os.environ.get("mysql_user",'root_admin')
+mysql_password = os.environ.get("mysql_password",'root_admin_ufsoft*123')
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     'mysql://'+mysql_user+':'+mysql_password+'@'+mysql_host+'/'+mysql_db
     # 'mysql://root:Ufsoft*123@20.12.17.153/devops_db'
@@ -52,9 +52,9 @@ class FileForm(FlaskForm):
 class Updates(db.Model):
     __tablename__ = 'fe_update_msg'
     id = db.Column(db.Integer,primary_key=True)
-    msg = db.Column(db.String(64))
-    notice = db.Column(db.String(64))
-    chicken_soup = db.Column(db.String(64))
+    msg = db.Column(db.String(1024))
+    notice = db.Column(db.String(1024))
+    chicken_soup = db.Column(db.String(256))
     title = db.Column(db.String(64))
     def __repr__(self):
         return '<Role %r>' % self.title
@@ -78,7 +78,7 @@ def configfile():
 # def file():
 #     return send_file('static/pic.jpg')
 
-@app.route('/getconfig')
+@app.route('/fe-update-msg/getconfig')
 def getconfig():
     config = Updates.query.get_or_404(1)
     print config.msg
@@ -87,7 +87,7 @@ def getconfig():
     # return jsonify(json.dumps(config.msg,ensure_ascii=False))
 
 
-@app.route('/form',methods=['GET','POST'])
+@app.route('/fe-update-msg/form',methods=['GET','POST'])
 def form():
     form = NameForm()
     name = None
@@ -102,7 +102,8 @@ def form():
 
 
 def updates(details, chicken_soup, title):
-    details_list = details.replace('\r','').replace('\n','').split(';')
+    details_list = details.replace('\r','').replace('\n','').split(u"；")
+    # details_list = details.split(u"；")
     dic = {
         'notice': details_list,
         'sentence': chicken_soup,
