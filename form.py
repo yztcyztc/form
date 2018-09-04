@@ -15,12 +15,17 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'YZTC'
 log = logging.getLogger(__name__)
+mysql_host = os.environ.get("mysql_host",'20.12.17.153')
+mysql_db = os.environ.get("mysql_db",'devops_db')
+mysql_user = os.environ.get("mysql_user",'root')
+mysql_password = os.environ.get("mysql_password",'Ufsoft*123')
 app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'mysql://root:Ufsoft*123@172.20.17.4/devops_db'
+    'mysql://'+mysql_user+':'+mysql_password+'@'+mysql_host+'/'+mysql_db
+    # 'mysql://root:Ufsoft*123@20.12.17.153/devops_db'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
-
+db.create_all()
 
 class NameForm(FlaskForm):
     num = 1
@@ -36,23 +41,30 @@ class FileForm(FlaskForm):
     config_file  = FileField('file',validators=[DataRequired()])
     submit = SubmitField(u'提交1')
 
-class Role(db.Model):
+# class Role(db.Model):
+#     __tablename__ = 'test'
+#     id = db.Column(db.Integer,primary_key=True)
+#     msg = db.Column(db.String(64))
+#     name = db.Column(db.String(64))
+#
+#     def __repr__(self):
+#         return '<Role %r>' % self.name
 
-    __tablename__ = 'test'
+class Updates(db.Model):
+    __tablename__ = 'fe_update_msg'
     id = db.Column(db.Integer,primary_key=True)
     msg = db.Column(db.String(64))
-    name = db.Column(db.String(64))
-
+    notice = db.Column(db.String(64))
+    chicken_soup = db.Column(db.String(64))
+    title = db.Column(db.String(64))
     def __repr__(self):
-        return '<Role %r>' % self.name
-
+        return '<Role %r>' % self.title
 
 @app.route('/')
 def index():
-    log.info('ggg')
-    Role.qurey.all()
-    #return  redirect('static')
-    return render_template('index.html',name='dd')
+    log.info('index')
+
+    return redirect('form')
 
 @app.route('/configfile',methods=['get',"post"])
 def configfile():
@@ -63,49 +75,52 @@ def configfile():
         flash('上传成功','ok')
     return render_template('configfile.html',form=form,name='dd')
 
-@app.route('/static')
-def file():
-    return send_file('static/pic.jpg')
+# @app.route('/static')
+# def file():
+#     return send_file('static/pic.jpg')
 
-@app.route('/watch')
-def watchfile():
-    return changefile(['qq','ww'],'soup','gongg')
+@app.route('/getconfig')
+def getconfig():
+    config = Updates.query.get_or_404(1)
+    print config.msg
+    return config.msg
+  #  return json.dumps(config.msg,ensure_ascii=False)
+    # return jsonify(json.dumps(config.msg,ensure_ascii=False))
+
 
 @app.route('/form',methods=['GET','POST'])
-def wtf():
+def form():
     form = NameForm()
     name = None
     if form.is_submitted():
         text = form.text.data
         soup = form.chicken_soup.data
         title = form.title.data
-        # sub = form.submit.label
-        # print type(sub)
-        # print sub
-        name= changefile(text,soup,title)
-    #     flash('meimei')
-    #     flash('didi')
+        name= updates(text, soup, title)
         #return redirect(url_for('wtf'))
 
     return render_template('form.html',form = form,name =name)
 
 
-def changefile(details,chicken_soup,title):
-    # print os.path.realpath('D:/pythons/form/static/test.txt')
+def updates(details, chicken_soup, title):
     details_list = details.replace('\r','').replace('\n','').split(';')
     dic = {
         'notice': details_list,
         'sentence': chicken_soup,
         'title': title
     }
-    jj = json.dumps(dic,ensure_ascii=False)
-
-    with codecs.open('D:/pythons/form/static/test.txt','w+',encoding='utf-8') as text:
-        text.write(jj)
-        res = 'resss'
-        #res=text.read()
-        log.info('res'+res)
-    return jj
+    msg = json.dumps(dic,ensure_ascii=False)
+    update = Updates.query.get_or_404(1)
+    update.msg = msg
+    update.chicken_soup = chicken_soup
+    update.title = title
+    update.notice = json.dumps(details_list,ensure_ascii=False)
+    # with codecs.open('D:/pythons/form/static/test.txt','w+',encoding='utf-8') as text:
+    #     text.write(jj)
+    #     res = 'resss'
+    #     #res=text.read()
+    #     log.info('res'+res)
+    return msg
 
 if __name__ == '__main__':
     handler = logging.StreamHandler()
@@ -115,7 +130,5 @@ if __name__ == '__main__':
     log.addHandler(handler)
     log.addHandler(texthandler)
     log.setLevel(logging.INFO)
-
-
-
+    db.create_all()
     app.run(host='0.0.0.0',port='80')
