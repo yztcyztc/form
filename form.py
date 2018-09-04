@@ -15,7 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'YZTC'
 log = logging.getLogger(__name__)
-mysql_host = os.environ.get("mysql_host",'20.12.17.153')
+mysql_host = os.environ.get("mysql_host",'20.12.17.153:3306')
 mysql_db = os.environ.get("mysql_db",'devops_db')
 mysql_user = os.environ.get("mysql_user",'root')
 mysql_password = os.environ.get("mysql_password",'Ufsoft*123')
@@ -25,7 +25,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
-db.create_all()
 
 class NameForm(FlaskForm):
     num = 1
