@@ -8,9 +8,11 @@ from flask_bootstrap import *
 from flask_wtf import FlaskForm
 from wtforms import *
 from wtforms.validators import *
-import codecs
 import json
 from flask_sqlalchemy import SQLAlchemy
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'YZTC'
