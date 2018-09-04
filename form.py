@@ -63,7 +63,7 @@ class Updates(db.Model):
 def index():
     log.info('index')
 
-    return redirect('form')
+    return redirect('fe-update-msg/form')
 
 @app.route('/configfile',methods=['get',"post"])
 def configfile():
