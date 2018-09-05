@@ -29,13 +29,11 @@ db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 
 class NameForm(FlaskForm):
-    num = 1
-    text = TextAreaField('notice',validators=[DataRequired()])
-    chicken_soup = StringField('chicken_soup',validators=[DataRequired()])
-    title = StringField('title', validators=[DataRequired()])
-    names = FieldList(StringField(u'项目'),label='dd',min_entries=num)
-    plus = SubmitField(label='pluss')
-    dec = SubmitField('--')
+    text = TextAreaField('notice')
+    chicken_soup = StringField('chicken_soup')
+    title = StringField('title')
+    # plus = SubmitField(label='pluss')
+    # dec = SubmitField('--')
     submit = SubmitField(u'提交')
 
 class FileForm(FlaskForm):
@@ -83,8 +81,14 @@ def configfile():
 @app.route('/fe-update-msg/getconfig')
 def getconfig():
     config = Updates.query.get_or_404(1)
-    print config.msg
-    return config.msg
+    result = {
+        'notice':json.loads(config.notice),
+        "sentence": config.chicken_soup,
+        'title':config.title
+    }
+    result = json.dumps(result,ensure_ascii=False)
+    log.info('get cofig:'+ result)
+    return result
   #  return json.dumps(config.msg,ensure_ascii=False)
     # return jsonify(json.dumps(config.msg,ensure_ascii=False))
 
@@ -97,6 +101,9 @@ def form():
         text = form.text.data
         soup = form.chicken_soup.data
         title = form.title.data
+        print (text == '')
+        print (soup == '')
+        print (title == '')
         name= updates(text, soup, title)
         #return redirect(url_for('wtf'))
 
@@ -104,7 +111,16 @@ def form():
 
 
 def updates(details, chicken_soup, title):
-    details_list = details.replace('\r','').replace('\n','').split(u"；")
+    update = Updates.query.get_or_404(1)
+    if chicken_soup != '':
+        update.chicken_soup = chicken_soup
+    if title != '':
+        update.title = title
+    details_list = ['']
+    if details != '':
+        details_list = details.replace('\r','').replace('\n','').split(u"；")
+        print type(details_list)
+        update.notice = json.dumps(details_list, ensure_ascii=False)
     # details_list = details.split(u"；")
     dic = {
         'notice': details_list,
@@ -112,11 +128,9 @@ def updates(details, chicken_soup, title):
         'title': title
     }
     msg = json.dumps(dic,ensure_ascii=False)
-    update = Updates.query.get_or_404(1)
+
     update.msg = msg
-    update.chicken_soup = chicken_soup
-    update.title = title
-    update.notice = json.dumps(details_list,ensure_ascii=False)
+
     # with codecs.open('D:/pythons/form/static/test.txt','w+',encoding='utf-8') as text:
     #     text.write(jj)
     #     res = 'resss'
