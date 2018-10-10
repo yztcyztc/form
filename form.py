@@ -29,9 +29,10 @@ db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 
 class NameForm(FlaskForm):
-    text = TextAreaField('notice')
-    chicken_soup = StringField('chicken_soup')
+
     title = StringField('title')
+    chicken_soup = StringField('chicken_soup')
+    text = TextAreaField('notice')
     # plus = SubmitField(label='pluss')
     # dec = SubmitField('--')
     submit = SubmitField(u'提交')
@@ -97,6 +98,8 @@ def getconfig():
 def form():
     form = NameForm()
     name = None
+
+    #如果有提交表单，则更新数据库
     if form.is_submitted():
         text = form.text.data
         soup = form.chicken_soup.data
@@ -105,11 +108,25 @@ def form():
         print (soup == '')
         print (title == '')
         name= updates(text, soup, title)
-        #return redirect(url_for('wtf'))
+
+    #回显上次内容
+    config = Updates.query.get_or_404(1)
+    form.title.data = config.title
+    form.chicken_soup.data = config.chicken_soup
+    notices = config.notice
+    notices = json.loads(notices)
+    print type(notices)
+    notice = ''
+    if(len(notices)>=1):
+        for i in notices:
+            notice += i+u'；'
+    notice=notice[:-1] #去掉最后一个分号
+    print notice
+    form.text.data = notice
 
     return render_template('form.html',form = form,name =name)
 
-
+#更新数据库
 def updates(details, chicken_soup, title):
     update = Updates.query.get_or_404(1)
     if chicken_soup != '':

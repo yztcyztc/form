@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% import 'wtf.html' as wtf %}
 {% block title %}myform{% endblock %}
+
 {% block body %}
     {% for message in get_flashed_messages() %}
         <div class="alert alert-warning">
@@ -11,11 +12,19 @@
         <h1> 生成内容为：{% if name %}{{ name }}{% else %}尚未提交{% endif %}!</h1>
     </div>
 
-    <form method="post">
-        {{ form.title.label }}{{ form.title }}
-        {{ form.chicken_soup.label }} {{ form.chicken_soup }}
-        {{ form.text.label }} {{ form.text }}
-{#        {{ form.plus }}{{ form.dec }}#}
-        {{ form.submit }}
-    </form>
+{#    <form method="post">#}
+{#        <div>#}
+{#           {{ form.title.label }}{{ form.title }}#}
+{#        </div>#}
+{#        <div>#}
+{#             {{ form.chicken_soup.label }} {{ form.chicken_soup }}#}
+{#        </div>#}
+{#        <div>#}
+{#            {{ form.text.label }} {{ form.text }}#}
+{#        </div>#}
+{#        <div>#}
+{#              {{ form.submit }}#}
+{#        </div>#}
+{#    </form>#}
+    {{ wtf.quick_form(form) }}
 {% endblock %}
