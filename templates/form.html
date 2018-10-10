@@ -9,7 +9,7 @@
         </div>
     {% endfor %}
     <div>
-        <h1> 生成内容为：{% if name %}{{ name }}{% else %}尚未提交{% endif %}!</h1>
+        <h1> {% if dry %}预览{% else %}提交{% endif %}内容为：{% if name %}{{ name }}{% else %}尚未提交{% endif %}!</h1>
     </div>
 
 {#    <form method="post">#}

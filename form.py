@@ -35,6 +35,7 @@ class NameForm(FlaskForm):
     text = TextAreaField('notice')
     # plus = SubmitField(label='pluss')
     # dec = SubmitField('--')
+    overview = SubmitField(u'预览')
     submit = SubmitField(u'提交')
 
 class FileForm(FlaskForm):
@@ -98,46 +99,48 @@ def getconfig():
 def form():
     form = NameForm()
     name = None
-
+    dry = False
     #如果有提交表单，则更新数据库
     if form.is_submitted():
+        dry = form.data['overview']
         text = form.text.data
         soup = form.chicken_soup.data
         title = form.title.data
-        print (text == '')
-        print (soup == '')
-        print (title == '')
-        name= updates(text, soup, title)
+        name= updates(text, soup, title, dry)
 
     #回显上次内容
-    config = Updates.query.get_or_404(1)
-    form.title.data = config.title
-    form.chicken_soup.data = config.chicken_soup
-    notices = config.notice
-    notices = json.loads(notices)
-    print type(notices)
-    notice = ''
-    if(len(notices)>=1):
-        for i in notices:
-            notice += i+u'；'
-    notice=notice[:-1] #去掉最后一个分号
-    print notice
-    form.text.data = notice
+    if dry :
+        pass
+    else:
+        config = Updates.query.get_or_404(1)
+        form.title.data = config.title
+        form.chicken_soup.data = config.chicken_soup
+        notices = config.notice
+        notices = json.loads(notices)
+        notice = ''
+        if(len(notices)>=1):
+            for i in notices:
+                notice += i+u'；'
+        notice=notice[:-1] #去掉最后一个分号
+        print notice
+        form.text.data = notice
 
-    return render_template('form.html',form = form,name =name)
+    return render_template('form.html',form = form,name =name,dry = dry)
 
 #更新数据库
-def updates(details, chicken_soup, title):
+def updates(details, chicken_soup, title,dry = True):
     update = Updates.query.get_or_404(1)
-    if chicken_soup != '':
+    print dry
+    if chicken_soup != '' and not dry:
+        print not dry
         update.chicken_soup = chicken_soup
-    if title != '':
+    if title != '' and not dry:
         update.title = title
-    details_list = ['']
+    details_list = []
     if details != '':
         details_list = details.replace('\r','').replace('\n','').split(u"；")
-        print type(details_list)
-        update.notice = json.dumps(details_list, ensure_ascii=False)
+        if not dry:
+            update.notice = json.dumps(details_list, ensure_ascii=False)
     # details_list = details.split(u"；")
     dic = {
         'notice': details_list,
@@ -145,8 +148,8 @@ def updates(details, chicken_soup, title):
         'title': title
     }
     msg = json.dumps(dic,ensure_ascii=False)
-
-    update.msg = msg
+    if not dry:
+        update.msg = msg
 
     # with codecs.open('D:/pythons/form/static/test.txt','w+',encoding='utf-8') as text:
     #     text.write(jj)
